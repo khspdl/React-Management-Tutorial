@@ -9,6 +9,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableBody from '@material-ui/core/TableBody';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { withStyles } from '@material-ui/core/styles';
+import axios from 'axios';
 
 const styles = theme => ({
   root: {
@@ -33,9 +34,15 @@ class App extends Component {
 
   componentDidMount() {
     this.timer = setInterval(this.progress, 20);
-    this.callApi()
+    this._db();
+/*    this.callApi()
      .then(res => this.setState({customers: res}))
-     .catch(err => console.log(err));
+     .catch(err => console.log(err));*/
+  }
+
+  _db = async() => {
+    const res = await axios.get('/api/customers');
+    console.log(res.data)
   }
 
   callApi = async () => {
