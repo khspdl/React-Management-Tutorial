@@ -3,7 +3,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const port = process.env.PORT || 5000;
-/*const db = require('./config/db');*/
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extented: true }));
@@ -25,22 +24,9 @@ connection.connect();
 const multer = require('multer');
 const upload = multer({dest: './upload'})
 
-/*
-app.get('/api/customers', (req, res) => {
-  db.query("SELECT * FROM customer", (err, data) => {
-    if(!err) {
-      res.send(data);
-    } else {
-      console.log(err);
-      res.send(err);
-    }
-  })
-})
-*/
-
 app.get('/api/customers', (req, res) => {
     connection.query(
-      "SELECT * FROM CUSTOMER",
+      "SELECT * FROM CUSTOMER WHERE isDeleted = 0",
       (err, rows, fields) => {
         res.send(rows);
       }
@@ -50,17 +36,12 @@ app.get('/api/customers', (req, res) => {
 app.use('/image', express.static('./upload'));
 
 app.post('/api/customers', upload.single('image'), (req, res) => {
-  let sql = 'INSERT INTO CUSTOMER VALUES (null, ?, ?, ?, ?, ?)';
+  let sql = 'INSERT INTO CUSTOMER VALUES (null, ?, ?, ?, ?, ?, now(), 0)';
   let image = '/image/' + req.file.filename;
   let name = req.body.name;
   let birthday = req.body.birthday;
   let gender = req.body.gender;
   let job = req.body.job;
-  /*console.log(name);
-  console.log(birthday);
-  console.log(image);
-  console.log(gender);
-  console.log(job);*/
   let params = [image, name, birthday, gender, job];
   connection.query(sql,params,
     (err, rows, fields) => {
@@ -69,6 +50,16 @@ app.post('/api/customers', upload.single('image'), (req, res) => {
       console.log(err);
     }
     );
+});
+
+app.delete('/api/customers/:id', (req, res) => {
+  let sql = 'UPDATE CUSTOMER SET isDeleted = 1 WHERE id = ?';
+  let params = [req.params.id];
+  connection.query(sql, params,
+    (err, rows, fields)=>{
+      res.send(rows);
+    }
+  )
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
